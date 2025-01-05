@@ -1,0 +1,86 @@
+# MATLAB specific
+*.asv
+*.m~
+*.mex*
+*.mat
+slprj/
+sccprj/
+codegen/
+*.slxc
+*.mlx~
+*.mlapp~
+*.mlappinstall~
+*.mlpkginstall~
+
+# Generated helper files
+helpsearch*/
+*.help
+doc/_build/
+
+# Autosave files
+*.asv
+*.m~
+*.autosave
+
+# Compiled files
+*.p
+*.mex*
+*.mlappinstall
+*.mltbx
+*.mlpkginstall
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Simulink cache files
+*.slxc
+
+# Octave session info
+octave-workspace
+
+# Output data and plots
+output/
+plots/
+*.fig
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor backup files
+*~
+*.bak
+*.swp
+
+# Log files
+*.log
+
+# Cache directories
+.cache/
+__pycache__/
+
+# IDE specific files
+.idea/
+.vscode/
+*.code-workspace
+
+# Temporary files
+temp/
+tmp/ 
