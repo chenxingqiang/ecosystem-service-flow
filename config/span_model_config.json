@@ -1,0 +1,153 @@
+{
+    "carbon_model": {
+        "source_threshold": 0.1,
+        "sink_threshold": 0.1,
+        "use_threshold": 0.1,
+        "trans_threshold": 0.1,
+        "cell_width": 30,
+        "cell_height": 30,
+        "source_type": "finite",
+        "sink_type": "finite",
+        "use_type": "finite",
+        "benefit_type": "rival",
+        "flow_layers": {
+            "vegetation_cover": {
+                "description": "植被覆盖度",
+                "unit": "百分比",
+                "range": [0, 1]
+            },
+            "productivity": {
+                "description": "生产力",
+                "unit": "gC/m2/year",
+                "range": [0, 1000]
+            },
+            "climate_factor": {
+                "description": "气候适宜度",
+                "unit": "无量纲",
+                "range": [0, 1]
+            },
+            "soil_factor": {
+                "description": "土壤适宜度",
+                "unit": "无量纲",
+                "range": [0, 1]
+            }
+        }
+    },
+    "flood_water_model": {
+        "source_threshold": 0.1,
+        "sink_threshold": 0.1,
+        "use_threshold": 0.1,
+        "trans_threshold": 0.1,
+        "cell_width": 30,
+        "cell_height": 30,
+        "source_type": "finite",
+        "sink_type": "finite",
+        "use_type": "finite",
+        "benefit_type": "rival",
+        "flow_layers": {
+            "dem": {
+                "description": "数字高程模型",
+                "unit": "m",
+                "range": [-10000, 10000]
+            },
+            "precipitation": {
+                "description": "降水量",
+                "unit": "mm",
+                "range": [0, 10000]
+            },
+            "landuse": {
+                "description": "土地利用类型",
+                "categories": {
+                    "1": "森林",
+                    "2": "草地",
+                    "3": "农田",
+                    "4": "水体",
+                    "5": "建设用地"
+                }
+            },
+            "soil_type": {
+                "description": "土壤类型",
+                "categories": {
+                    "1": "粘土",
+                    "2": "壤土",
+                    "3": "砂土"
+                }
+            }
+        },
+        "parameters": {
+            "roughness": {
+                "forest": 0.1,
+                "grassland": 0.05,
+                "cropland": 0.03,
+                "water": 0.01,
+                "urban": 0.02
+            },
+            "soil_factors": {
+                "clay": 1.2,
+                "loam": 1.0,
+                "sand": 0.8
+            },
+            "infiltration_rate": {
+                "forest": 30,
+                "grassland": 20,
+                "cropland": 15,
+                "water": 0,
+                "urban": 5
+            }
+        }
+    },
+    "surface_water_model": {
+        "source_threshold": 0.1,
+        "sink_threshold": 0.1,
+        "use_threshold": 0.1,
+        "trans_threshold": 0.1,
+        "cell_width": 30,
+        "cell_height": 30,
+        "source_type": "finite",
+        "sink_type": "finite",
+        "use_type": "finite",
+        "benefit_type": "rival",
+        "flow_layers": {
+            "dem": {
+                "description": "数字高程模型",
+                "unit": "m",
+                "range": [-10000, 10000]
+            },
+            "precipitation": {
+                "description": "降水量",
+                "unit": "mm",
+                "range": [0, 10000]
+            },
+            "landuse": {
+                "description": "土地利用类型",
+                "categories": {
+                    "1": "森林",
+                    "2": "草地",
+                    "3": "农田",
+                    "4": "水体",
+                    "5": "建设用地"
+                }
+            },
+            "soil_type": {
+                "description": "土壤类型",
+                "categories": {
+                    "1": "粘土",
+                    "2": "壤土",
+                    "3": "砂土"
+                }
+            }
+        },
+        "parameters": {
+            "stream_threshold": {
+                "description": "河网提取阈值",
+                "method": "mean + std",
+                "unit": "累积流量"
+            },
+            "simulation": {
+                "time_step": 3600,
+                "total_time": 86400,
+                "description": "模拟时间参数（秒）"
+            }
+        }
+    }
+} 
