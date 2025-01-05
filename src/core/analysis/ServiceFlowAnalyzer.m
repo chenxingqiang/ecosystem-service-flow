@@ -8,6 +8,7 @@ classdef ServiceFlowAnalyzer
         ResistanceData      % 阻力数据
         SpatialData         % 空间关系数据
         Results             % 分析结果
+        ValidationResults   % 验证结果
         
         % 分析参数
         Parameters = struct(...
@@ -22,7 +23,9 @@ classdef ServiceFlowAnalyzer
             'benefit_type', 'rival', ...   % 效益类型：rival/non-rival
             'cell_width', 100, ...         % 栅格宽度(米)
             'cell_height', 100, ...        % 栅格高度(米)
-            'downscaling_factor', 1 ...    % 降尺度因子
+            'downscaling_factor', 1, ...   % 降尺度因子
+            'validation_threshold', 0.95,... % 验证阈值
+            'uncertainty_threshold', 0.2 ... % 不确定性阈值
         )
         
         % 流动模型类型
@@ -135,24 +138,183 @@ classdef ServiceFlowAnalyzer
         
         function validateData(obj)
             % 验证数据有效性
-            % 1. 检查数据维度一致性
-            sizes = {size(obj.SupplyData), size(obj.DemandData), ...
-                    size(obj.ResistanceData), size(obj.SpatialData)};
-            if ~all(cellfun(@(x) isequal(x, sizes{1}), sizes))
-                error('数据维度不一致');
+            validation_results = struct();
+            
+            % 1. 基础数据验证
+            validation_results.basic = obj.validateBasicData();
+            
+            % 2. 空间一致性验证
+            validation_results.spatial = obj.validateSpatialConsistency();
+            
+            % 3. 数值范围验证
+            validation_results.range = obj.validateValueRanges();
+            
+            % 4. 物理约束验证
+            validation_results.physical = obj.validatePhysicalConstraints();
+            
+            % 5. 模型特定验证
+            validation_results.model = obj.validateModelSpecific();
+            
+            % 保存验证结果
+            obj.ValidationResults = validation_results;
+            
+            % 检查是否通过所有验证
+            if ~obj.checkValidationResults(validation_results)
+                error('数据验证失败，请检查验证结果');
+            end
+        end
+        
+        function results = validateBasicData(obj)
+            % 基础数据验证
+            results = struct();
+            
+            % 检查数据完整性
+            results.completeness = struct(...
+                'supply', ~isempty(obj.SupplyData), ...
+                'demand', ~isempty(obj.DemandData), ...
+                'resistance', ~isempty(obj.ResistanceData), ...
+                'spatial', ~isempty(obj.SpatialData));
+            
+            % 检查数据类型
+            results.data_type = struct(...
+                'supply', isnumeric(obj.SupplyData), ...
+                'demand', isnumeric(obj.DemandData), ...
+                'resistance', isnumeric(obj.ResistanceData), ...
+                'spatial', isnumeric(obj.SpatialData));
+            
+            % 检查数据质量
+            results.quality = struct(...
+                'supply', ~any(isnan(obj.SupplyData(:)) | isinf(obj.SupplyData(:))), ...
+                'demand', ~any(isnan(obj.DemandData(:)) | isinf(obj.DemandData(:))), ...
+                'resistance', ~any(isnan(obj.ResistanceData(:)) | isinf(obj.ResistanceData(:))), ...
+                'spatial', ~any(isnan(obj.SpatialData(:)) | isinf(obj.SpatialData(:))));
+        end
+        
+        function results = validateSpatialConsistency(obj)
+            % 空间一致性验证
+            results = struct();
+            
+            % 检查栅格尺寸一致性
+            base_size = size(obj.SpatialData);
+            results.size_consistency = struct(...
+                'supply', isequal(size(obj.SupplyData), base_size), ...
+                'demand', isequal(size(obj.DemandData), base_size), ...
+                'resistance', isequal(size(obj.ResistanceData), base_size));
+            
+            % 检查空间参考一致性
+            results.spatial_reference = true;  % 需要根据实际数据格式扩展
+            
+            % 检查边界一致性
+            results.boundary_consistency = obj.checkBoundaryConsistency();
+        end
+        
+        function results = validateValueRanges(obj)
+            % 数值范围验证
+            results = struct();
+            
+            % 供给数据范围验证
+            results.supply = struct(...
+                'non_negative', all(obj.SupplyData(:) >= 0), ...
+                'within_bounds', all(obj.SupplyData(:) <= max(obj.SupplyData(:))));
+            
+            % 需求数据范围验证
+            results.demand = struct(...
+                'non_negative', all(obj.DemandData(:) >= 0), ...
+                'within_bounds', all(obj.DemandData(:) <= max(obj.DemandData(:))));
+            
+            % 阻力数据范围验证
+            results.resistance = struct(...
+                'non_negative', all(obj.ResistanceData(:) >= 0), ...
+                'normalized', all(obj.ResistanceData(:) <= 1));
+            
+            % 空间数据范围验证
+            results.spatial = struct(...
+                'elevation_valid', obj.validateElevationRange(), ...
+                'slope_valid', obj.validateSlopeRange());
+        end
+        
+        function results = validatePhysicalConstraints(obj)
+            % 物理约束验证
+            results = struct();
+            
+            % 质量守恒验证
+            results.mass_conservation = obj.validateMassConservation();
+            
+            % 能量守恒验证
+            results.energy_conservation = obj.validateEnergyConservation();
+            
+            % 流动约束验证
+            results.flow_constraints = obj.validateFlowConstraints();
+        end
+        
+        function results = validateModelSpecific(obj)
+            % 模型特定验证
+            results = struct();
+            
+            % 根据不同流动模型类型进行特定验证
+            switch obj.FlowModel
+                case 'surface-water'
+                    results = obj.validateSurfaceWaterModel();
+                case 'sediment'
+                    results = obj.validateSedimentModel();
+                case 'line-of-sight'
+                    results = obj.validateLineOfSightModel();
+                case 'proximity'
+                    results = obj.validateProximityModel();
+                case 'carbon'
+                    results = obj.validateCarbonModel();
+                case 'flood-water'
+                    results = obj.validateFloodWaterModel();
+                case 'coastal-storm-protection'
+                    results = obj.validateCoastalStormProtectionModel();
+                case 'subsistence-fisheries'
+                    results = obj.validateSubsistenceFisheriesModel();
+                otherwise
+                    error('不支持的流动模型类型');
+            end
+        end
+        
+        function valid = checkValidationResults(obj, results)
+            % 检查验证结果
+            valid = true;
+            
+            % 检查基础数据验证结果
+            if ~all(structfun(@all, results.basic.completeness)) || ...
+               ~all(structfun(@all, results.basic.data_type)) || ...
+               ~all(structfun(@all, results.basic.quality))
+                valid = false;
+                return;
             end
             
-            % 2. 检查数据类型
-            if ~all(cellfun(@isnumeric, {obj.SupplyData, obj.DemandData, ...
-                                       obj.ResistanceData, obj.SpatialData}))
-                error('数据类型必须为数值型');
+            % 检查空间一致性验证结果
+            if ~all(structfun(@all, results.spatial.size_consistency)) || ...
+               ~results.spatial.spatial_reference || ...
+               ~results.spatial.boundary_consistency
+                valid = false;
+                return;
             end
             
-            % 3. 检查数据范围
-            if any(cellfun(@(x) any(isnan(x(:)) | isinf(x(:))), ...
-                         {obj.SupplyData, obj.DemandData, ...
-                          obj.ResistanceData, obj.SpatialData}))
-                error('数据包含NaN或Inf');
+            % 检查数值范围验证结果
+            if ~all(structfun(@all, results.range.supply)) || ...
+               ~all(structfun(@all, results.range.demand)) || ...
+               ~all(structfun(@all, results.range.resistance)) || ...
+               ~all(structfun(@all, results.range.spatial))
+                valid = false;
+                return;
+            end
+            
+            % 检查物理约束验证结果
+            if ~results.physical.mass_conservation || ...
+               ~results.physical.energy_conservation || ...
+               ~results.physical.flow_constraints
+                valid = false;
+                return;
+            end
+            
+            % 检查模型特定验证结果
+            if ~obj.checkModelSpecificValidation(results.model)
+                valid = false;
+                return;
             end
         end
         
@@ -1900,6 +2062,639 @@ classdef ServiceFlowAnalyzer
                          'total', sum(flux_matrix(:)), ...
                          'mean', mean(flux_matrix(:)), ...
                          'std', std(flux_matrix(:)));
+        end
+        
+        function valid = checkBoundaryConsistency(obj)
+            % 检查边界一致性
+            % 获取所有数据的边界值
+            supply_boundary = obj.SupplyData([1,end],:);
+            supply_boundary = [supply_boundary; obj.SupplyData(:,[1,end])'];
+            
+            demand_boundary = obj.DemandData([1,end],:);
+            demand_boundary = [demand_boundary; obj.DemandData(:,[1,end])'];
+            
+            resistance_boundary = obj.ResistanceData([1,end],:);
+            resistance_boundary = [resistance_boundary; obj.ResistanceData(:,[1,end])'];
+            
+            % 检查边界值的一致性
+            valid = all(abs(supply_boundary(:)) <= obj.Parameters.validation_threshold) && ...
+                   all(abs(demand_boundary(:)) <= obj.Parameters.validation_threshold) && ...
+                   all(abs(resistance_boundary(:)) <= obj.Parameters.validation_threshold);
+        end
+        
+        function valid = validateElevationRange(obj)
+            % 验证高程范围
+            if ~isfield(obj.SpatialData, 'dem')
+                valid = true;
+                return;
+            end
+            
+            dem = obj.SpatialData.dem;
+            valid = all(dem(:) >= -500) && all(dem(:) <= 9000);  % 合理的高程范围
+        end
+        
+        function valid = validateSlopeRange(obj)
+            % 验证坡度范围
+            if ~isfield(obj.SpatialData, 'slope')
+                valid = true;
+                return;
+            end
+            
+            slope = obj.SpatialData.slope;
+            valid = all(slope(:) >= 0) && all(slope(:) <= 90);  % 坡度范围0-90度
+        end
+        
+        function valid = validateMassConservation(obj)
+            % 验证质量守恒
+            % 计算总供给量
+            total_supply = sum(obj.SupplyData(:));
+            
+            % 计算总需求量
+            total_demand = sum(obj.DemandData(:));
+            
+            % 检查质量守恒
+            if strcmp(obj.Parameters.source_type, 'finite')
+                valid = abs(total_supply - total_demand) / max(total_supply, total_demand) <= ...
+                    obj.Parameters.validation_threshold;
+            else
+                valid = true;  % 无限源不需要检查质量守恒
+            end
+        end
+        
+        function valid = validateEnergyConservation(obj)
+            % 验证能量守恒
+            % 根据不同模型类型验证能量守恒
+            switch obj.FlowModel
+                case {'surface-water', 'flood-water'}
+                    valid = obj.validateHydraulicEnergy();
+                case 'sediment'
+                    valid = obj.validateSedimentEnergy();
+                otherwise
+                    valid = true;  % 其他模型暂不验证能量守恒
+            end
+        end
+        
+        function valid = validateFlowConstraints(obj)
+            % 验证流动约束
+            valid = true;
+            
+            % 检查流动方向的物理合理性
+            if isfield(obj.SpatialData, 'dem')
+                [gx, gy] = gradient(obj.SpatialData.dem);
+                flow_direction = atan2(gy, gx);
+                
+                % 检查流向是否符合重力方向
+                valid = valid && all(flow_direction(:) >= -pi) && ...
+                        all(flow_direction(:) <= pi);
+            end
+            
+            % 检查流速限制
+            if isfield(obj.SpatialData, 'velocity')
+                valid = valid && all(obj.SpatialData.velocity(:) >= 0) && ...
+                        all(obj.SpatialData.velocity(:) <= 30);  % 合理的流速范围
+            end
+        end
+        
+        function valid = validateHydraulicEnergy(obj)
+            % 验证水力能量守恒
+            if ~isfield(obj.SpatialData, 'dem') || ~isfield(obj.SpatialData, 'velocity')
+                valid = true;
+                return;
+            end
+            
+            % 计算势能
+            potential_energy = 9.81 * obj.SpatialData.dem;  % g*h
+            
+            % 计算动能
+            kinetic_energy = 0.5 * obj.SpatialData.velocity.^2;  % 1/2*v^2
+            
+            % 检查总能量变化
+            total_energy_upstream = sum(potential_energy(:) + kinetic_energy(:));
+            total_energy_downstream = sum(potential_energy(end,:) + kinetic_energy(end,:));
+            
+            valid = total_energy_downstream <= total_energy_upstream;
+        end
+        
+        function valid = validateSedimentEnergy(obj)
+            % 验证泥沙输移能量守恒
+            if ~isfield(obj.SpatialData, 'dem') || ~isfield(obj.SpatialData, 'sediment_concentration')
+                valid = true;
+                return;
+            end
+            
+            % 计算泥沙势能
+            sediment_potential = 9.81 * obj.SpatialData.dem .* obj.SpatialData.sediment_concentration;
+            
+            % 检查泥沙输移过程中的能量变化
+            total_energy_upstream = sum(sediment_potential(:));
+            total_energy_downstream = sum(sediment_potential(end,:));
+            
+            valid = total_energy_downstream <= total_energy_upstream;
+        end
+        
+        function results = validateSurfaceWaterModel(obj)
+            % 地表水模型特定验证
+            results = struct();
+            
+            % 验证水文连续性
+            results.hydrological_continuity = obj.validateHydrologicalContinuity();
+            
+            % 验证流向合理性
+            results.flow_direction = obj.validateFlowDirection();
+            
+            % 验证流速范围
+            results.velocity_range = obj.validateVelocityRange();
+        end
+        
+        function results = validateSedimentModel(obj)
+            % 泥沙模型特定验证
+            results = struct();
+            
+            % 验证泥沙浓度范围
+            results.concentration_range = obj.validateSedimentConcentration();
+            
+            % 验证输移能力
+            results.transport_capacity = obj.validateTransportCapacity();
+            
+            % 验证沉积分布
+            results.deposition_pattern = obj.validateDepositionPattern();
+        end
+        
+        function results = validateLineOfSightModel(obj)
+            % 视线模型特定验证
+            results = struct();
+            
+            % 验证视点位置
+            results.viewpoint_position = obj.validateViewpointPosition();
+            
+            % 验证视距范围
+            results.visibility_range = obj.validateVisibilityRange();
+            
+            % 验证遮挡效应
+            results.occlusion_effect = obj.validateOcclusionEffect();
+        end
+        
+        % ... Add other model-specific validation methods ...
+        
+        function visualizeValidationResults(obj)
+            % 可视化验证结果
+            figure('Name', '验证结果可视化');
+            
+            % 1. 基础数据验证结果
+            subplot(2,2,1);
+            obj.plotBasicValidation();
+            title('基础数据验证');
+            
+            % 2. 空间一致性验证结果
+            subplot(2,2,2);
+            obj.plotSpatialValidation();
+            title('空间一致性验证');
+            
+            % 3. 物理约束验证结果
+            subplot(2,2,3);
+            obj.plotPhysicalValidation();
+            title('物理约束验证');
+            
+            % 4. 模型特定验证结果
+            subplot(2,2,4);
+            obj.plotModelSpecificValidation();
+            title('模型特定验证');
+        end
+        
+        function plotBasicValidation(obj)
+            % 绘制基础数据验证结果
+            results = obj.ValidationResults.basic;
+            categories = {'完整性', '数据类型', '数据质量'};
+            data_types = {'供给', '需求', '阻力', '空间'};
+            
+            % 创建验证结果矩阵
+            validation_matrix = [...
+                structfun(@double, results.completeness);
+                structfun(@double, results.data_type);
+                structfun(@double, results.quality)];
+            
+            % 绘制热力图
+            imagesc(validation_matrix);
+            colormap('summer');
+            colorbar;
+            
+            % 设置标签
+            set(gca, 'XTickLabel', data_types);
+            set(gca, 'YTickLabel', categories);
+            xtickangle(45);
+        end
+        
+        function plotSpatialValidation(obj)
+            % 绘制空间一致性验证结果
+            results = obj.ValidationResults.spatial;
+            
+            % 提取验证结果
+            consistency = structfun(@double, results.size_consistency);
+            reference = double(results.spatial_reference);
+            boundary = double(results.boundary_consistency);
+            
+            % 创建条形图
+            bar([consistency, reference, boundary]);
+            
+            % 设置标签
+            categories = {'尺寸一致性', '空间参考', '边界一致性'};
+            set(gca, 'XTickLabel', categories);
+            xtickangle(45);
+            ylim([0 1.2]);
+        end
+        
+        function plotPhysicalValidation(obj)
+            % 绘制物理约束验证结果
+            results = obj.ValidationResults.physical;
+            
+            % 提取验证结果
+            validation_results = [
+                double(results.mass_conservation)
+                double(results.energy_conservation)
+                double(results.flow_constraints)
+            ];
+            
+            % 创建条形图
+            bar(validation_results);
+            
+            % 设置标签
+            categories = {'质量守恒', '能量守恒', '流动约束'};
+            set(gca, 'XTickLabel', categories);
+            xtickangle(45);
+            ylim([0 1.2]);
+        end
+        
+        function plotModelSpecificValidation(obj)
+            % 绘制模型特定验证结果
+            results = obj.ValidationResults.model;
+            
+            % 根据不同模型类型绘制验证结果
+            switch obj.FlowModel
+                case 'surface-water'
+                    obj.plotSurfaceWaterValidation(results);
+                case 'sediment'
+                    obj.plotSedimentValidation(results);
+                case 'line-of-sight'
+                    obj.plotLineOfSightValidation(results);
+                otherwise
+                    text(0.5, 0.5, '暂无特定验证结果', ...
+                        'HorizontalAlignment', 'center');
+            end
+        end
+        
+        function plotSurfaceWaterValidation(obj, results)
+            % 绘制地表水模型验证结果
+            validation_results = [
+                double(results.hydrological_continuity)
+                double(results.flow_direction)
+                double(results.velocity_range)
+            ];
+            
+            % 创建条形图
+            bar(validation_results);
+            
+            % 设置标签
+            categories = {'水文连续性', '流向合理性', '流速范围'};
+            set(gca, 'XTickLabel', categories);
+            xtickangle(45);
+            ylim([0 1.2]);
+        end
+        
+        % ... Add other visualization methods ...
+        
+        function valid = validateHydrologicalContinuity(obj)
+            % 验证水文连续性
+            if ~isfield(obj.SpatialData, 'precipitation') || ...
+               ~isfield(obj.SpatialData, 'runoff') || ...
+               ~isfield(obj.SpatialData, 'infiltration') || ...
+               ~isfield(obj.SpatialData, 'evaporation')
+                valid = true;
+                return;
+            end
+            
+            % 计算水量平衡
+            total_precipitation = sum(obj.SpatialData.precipitation(:));
+            total_runoff = sum(obj.SpatialData.runoff(:));
+            total_infiltration = sum(obj.SpatialData.infiltration(:));
+            total_evaporation = sum(obj.SpatialData.evaporation(:));
+            
+            % 检查水量平衡误差
+            water_balance_error = abs(total_precipitation - ...
+                (total_runoff + total_infiltration + total_evaporation)) / total_precipitation;
+            
+            valid = water_balance_error <= obj.Parameters.validation_threshold;
+        end
+        
+        function valid = validateFlowDirection(obj)
+            % 验证流向合理性
+            if ~isfield(obj.SpatialData, 'flow_direction') || ...
+               ~isfield(obj.SpatialData, 'dem')
+                valid = true;
+                return;
+            end
+            
+            % 检查流向编码是否合法(D8方法：1-8)
+            flow_dir = obj.SpatialData.flow_direction;
+            valid = all(flow_dir(:) >= 1 & flow_dir(:) <= 8);
+            
+            % 检查流向是否符合地形
+            if valid
+                [rows, cols] = size(flow_dir);
+                dem = obj.SpatialData.dem;
+                
+                for i = 2:rows-1
+                    for j = 2:cols-1
+                        % 获取当前栅格的流向
+                        direction = flow_dir(i,j);
+                        
+                        % 获取下游栅格位置
+                        [next_i, next_j] = obj.getDownstreamCell(i, j, direction);
+                        
+                        % 检查是否符合地形
+                        if dem(i,j) <= dem(next_i, next_j)
+                            valid = false;
+                            return;
+                        end
+                    end
+                end
+            end
+        end
+        
+        function valid = validateVelocityRange(obj)
+            % 验证流速范围
+            if ~isfield(obj.SpatialData, 'velocity')
+                valid = true;
+                return;
+            end
+            
+            velocity = obj.SpatialData.velocity;
+            
+            % 检查流速是否在合理范围内
+            valid = all(velocity(:) >= 0) && all(velocity(:) <= 30);  % 单位：m/s
+        end
+        
+        function valid = validateSedimentConcentration(obj)
+            % 验证泥沙浓度范围
+            if ~isfield(obj.SpatialData, 'sediment_concentration')
+                valid = true;
+                return;
+            end
+            
+            concentration = obj.SpatialData.sediment_concentration;
+            
+            % 检查浓度是否在合理范围内(0-1000 kg/m³)
+            valid = all(concentration(:) >= 0) && all(concentration(:) <= 1000);
+        end
+        
+        function valid = validateTransportCapacity(obj)
+            % 验证输移能力
+            if ~isfield(obj.SpatialData, 'transport_capacity') || ...
+               ~isfield(obj.SpatialData, 'sediment_load')
+                valid = true;
+                return;
+            end
+            
+            capacity = obj.SpatialData.transport_capacity;
+            load = obj.SpatialData.sediment_load;
+            
+            % 检查输移量是否不超过输移能力
+            valid = all(load(:) <= capacity(:));
+        end
+        
+        function valid = validateDepositionPattern(obj)
+            % 验证沉积分布
+            if ~isfield(obj.SpatialData, 'deposition') || ...
+               ~isfield(obj.SpatialData, 'slope')
+                valid = true;
+                return;
+            end
+            
+            deposition = obj.SpatialData.deposition;
+            slope = obj.SpatialData.slope;
+            
+            % 检查沉积是否主要发生在坡度较小的区域
+            low_slope_mask = slope <= 5;  % 坡度小于5度的区域
+            total_deposition = sum(deposition(:));
+            low_slope_deposition = sum(deposition(low_slope_mask));
+            
+            valid = low_slope_deposition / total_deposition >= 0.7;  % 70%的沉积应发生在缓坡区
+        end
+        
+        function valid = validateViewpointPosition(obj)
+            % 验证视点位置
+            if ~isfield(obj.SpatialData, 'viewpoints') || ...
+               ~isfield(obj.SpatialData, 'dem')
+                valid = true;
+                return;
+            end
+            
+            viewpoints = obj.SpatialData.viewpoints;
+            dem = obj.SpatialData.dem;
+            
+            % 检查视点是否在有效范围内
+            [rows, cols] = size(dem);
+            valid = all(viewpoints(:,1) >= 1 & viewpoints(:,1) <= rows & ...
+                       viewpoints(:,2) >= 1 & viewpoints(:,2) <= cols);
+        end
+        
+        function valid = validateVisibilityRange(obj)
+            % 验证视距范围
+            if ~isfield(obj.SpatialData, 'visibility_range')
+                valid = true;
+                return;
+            end
+            
+            range = obj.SpatialData.visibility_range;
+            
+            % 检查视距是否在合理范围内(0-50km)
+            valid = all(range(:) >= 0) && all(range(:) <= 50000);
+        end
+        
+        function valid = validateOcclusionEffect(obj)
+            % 验证遮挡效应
+            if ~isfield(obj.SpatialData, 'visibility') || ...
+               ~isfield(obj.SpatialData, 'dem')
+                valid = true;
+                return;
+            end
+            
+            visibility = obj.SpatialData.visibility;
+            dem = obj.SpatialData.dem;
+            
+            % 检查高程差异大的区域是否存在遮挡
+            [gx, gy] = gradient(dem);
+            steep_mask = sqrt(gx.^2 + gy.^2) > 1;  % 坡度大于45度的区域
+            
+            % 在陡峭区域后方应该存在遮挡
+            valid = all(visibility(steep_mask) < 1);
+        end
+        
+        function plotSedimentValidation(obj, results)
+            % 绘制泥沙模型验证结果
+            validation_results = [
+                double(results.concentration_range)
+                double(results.transport_capacity)
+                double(results.deposition_pattern)
+            ];
+            
+            % 创建条形图
+            bar(validation_results);
+            
+            % 设置标签
+            categories = {'浓度范围', '输移能力', '沉积分布'};
+            set(gca, 'XTickLabel', categories);
+            xtickangle(45);
+            ylim([0 1.2]);
+        end
+        
+        function plotLineOfSightValidation(obj, results)
+            % 绘制视线模型验证结果
+            validation_results = [
+                double(results.viewpoint_position)
+                double(results.visibility_range)
+                double(results.occlusion_effect)
+            ];
+            
+            % 创建条形图
+            bar(validation_results);
+            
+            % 设置标签
+            categories = {'视点位置', '视距范围', '遮挡效应'};
+            set(gca, 'XTickLabel', categories);
+            xtickangle(45);
+            ylim([0 1.2]);
+        end
+        
+        function visualizeUncertainty(obj)
+            % 可视化不确定性分析结果
+            if ~isfield(obj.Results, 'uncertainty')
+                return;
+            end
+            
+            uncertainty = obj.Results.uncertainty;
+            figure('Name', '不确定性分析');
+            
+            % 1. 各组分不确定性
+            subplot(2,2,1);
+            components = {'供给', '需求', '阻力'};
+            uncertainties = [uncertainty.supply, uncertainty.demand, uncertainty.resistance];
+            bar(uncertainties);
+            set(gca, 'XTickLabel', components);
+            title('组分不确定性');
+            ylim([0 1]);
+            
+            % 2. 空间分布不确定性
+            subplot(2,2,2);
+            if isfield(uncertainty, 'spatial_distribution')
+                imagesc(uncertainty.spatial_distribution);
+                colorbar;
+                title('空间分布不确定性');
+            end
+            
+            % 3. 时间变异不确定性
+            subplot(2,2,3);
+            if isfield(uncertainty, 'temporal_variation')
+                plot(uncertainty.temporal_variation);
+                title('时间变异不确定性');
+                xlabel('时间步长');
+                ylabel('不确定性');
+            end
+            
+            % 4. 综合不确定性
+            subplot(2,2,4);
+            text(0.5, 0.5, sprintf('总体不确定性: %.2f%%', uncertainty.total * 100), ...
+                'HorizontalAlignment', 'center');
+            axis off;
+        end
+        
+        function visualizeValidationSummary(obj)
+            % 可视化验证结果总结
+            figure('Name', '验证结果总结');
+            
+            % 1. 验证通过率
+            subplot(2,2,1);
+            obj.plotValidationPassRate();
+            
+            % 2. 验证错误分布
+            subplot(2,2,2);
+            obj.plotValidationErrorDistribution();
+            
+            % 3. 时间序列验证
+            subplot(2,2,3);
+            obj.plotTemporalValidation();
+            
+            % 4. 空间验证
+            subplot(2,2,4);
+            obj.plotSpatialValidationMap();
+        end
+        
+        function plotValidationPassRate(obj)
+            % 绘制验证通过率
+            results = obj.ValidationResults;
+            categories = {'基础', '空间', '物理', '模型特定'};
+            
+            % 计算各类验证的通过率
+            pass_rates = [
+                mean(structfun(@mean, results.basic))
+                mean(structfun(@mean, results.spatial))
+                mean([results.physical.mass_conservation, ...
+                     results.physical.energy_conservation, ...
+                     results.physical.flow_constraints])
+                mean(structfun(@mean, results.model))
+            ];
+            
+            % 创建饼图
+            pie(pass_rates);
+            legend(categories, 'Location', 'eastoutside');
+            title('验证通过率');
+        end
+        
+        function plotValidationErrorDistribution(obj)
+            % 绘制验证错误分布
+            results = obj.ValidationResults;
+            
+            % 统计各类错误
+            error_counts = struct();
+            error_counts.data_quality = sum(~structfun(@all, results.basic.quality));
+            error_counts.spatial = sum(~structfun(@all, results.spatial.size_consistency));
+            error_counts.physical = sum(~[results.physical.mass_conservation, ...
+                                        results.physical.energy_conservation, ...
+                                        results.physical.flow_constraints]);
+            error_counts.model_specific = sum(~structfun(@all, results.model));
+            
+            % 创建帕累托图
+            pareto(struct2array(error_counts));
+            set(gca, 'XTickLabel', fieldnames(error_counts));
+            title('验证错误分布');
+        end
+        
+        function plotTemporalValidation(obj)
+            % 绘制时间序列验证结果
+            if ~isfield(obj.Results, 'temporal_validation')
+                text(0.5, 0.5, '无时间序列验证数据', ...
+                    'HorizontalAlignment', 'center');
+                return;
+            end
+            
+            temporal = obj.Results.temporal_validation;
+            plot(temporal.time, temporal.validation_score);
+            title('时间序列验证');
+            xlabel('时间');
+            ylabel('验证得分');
+        end
+        
+        function plotSpatialValidationMap(obj)
+            % 绘制空间验证地图
+            if ~isfield(obj.Results, 'spatial_validation')
+                text(0.5, 0.5, '无空间验证数据', ...
+                    'HorizontalAlignment', 'center');
+                return;
+            end
+            
+            spatial = obj.Results.spatial_validation;
+            imagesc(spatial.validation_map);
+            colorbar;
+            title('空间验证地图');
         end
     end
 end 
