@@ -75,16 +75,19 @@ This repository contains a collection of specialized models for analyzing ecosys
 ## Installation
 
 1. Clone the repository:
+
 ```bash
-git clone https://github.com/yourusername/ecosystem-service-flow.git
+git clone https://github.com/chenxingqiang/ecosystem-service-flow.git
 ```
 
 2. Add the repository directory and all subdirectories to your MATLAB path:
+
 ```matlab
 addpath(genpath('ecosystem-service-flow'));
 ```
 
 3. Verify installation by running the test script:
+
 ```matlab
 cd tests
 RunSpanModels
@@ -149,6 +152,7 @@ TestSurfaceWater
 ## Documentation
 
 Each model has detailed documentation in the `docs` directory:
+
 - Model overview
 - Class structure
 - Methods and parameters
@@ -177,7 +181,7 @@ If you use these models in your research, please cite:
   title = {Ecosystem Service Flow Models},
   author = {Your Name},
   year = {2024},
-  url = {https://github.com/yourusername/ecosystem-service-flow},
+  url = {https://github.com/chenxingqiang/ecosystem-service-flow},
   version = {1.0.0}
 }
 ```
@@ -186,7 +190,7 @@ If you use these models in your research, please cite:
 
 Your Name - your.email@example.com
 
-Project Link: [https://github.com/yourusername/ecosystem-service-flow](https://github.com/yourusername/ecosystem-service-flow)
+Project Link: [https://github.com/chenxingqiang/ecosystem-service-flow](https://github.com/chenxingqiang/ecosystem-service-flow)
 
 ## Acknowledgments
 
