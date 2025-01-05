@@ -24,6 +24,7 @@ To run the complete test suite:
 3. Run `RunAllTests.m`
 
 The script will:
+
 - Execute all test scripts
 - Generate test results and visualizations
 - Create a detailed test report in HTML format
@@ -32,6 +33,7 @@ The script will:
 ## Test Output
 
 Test results are saved in the `output/test_results` directory:
+
 - `test_report.html`: HTML report with test results and statistics
 - `test_suite_results.mat`: MATLAB data file containing test results
 - Individual test results and visualizations for each model
@@ -39,6 +41,7 @@ Test results are saved in the `output/test_results` directory:
 ## Test Coverage
 
 Each test script validates:
+
 - Model initialization and parameter validation
 - Core calculations and algorithms
 - Data flow and transformations
@@ -49,6 +52,7 @@ Each test script validates:
 ## Adding New Tests
 
 To add tests for a new model:
+
 1. Create a new test script following the existing pattern
 2. Add the test execution to `RunAllTests.m`
 3. Update this README to include the new test script
@@ -63,6 +67,7 @@ To add tests for a new model:
 ## Troubleshooting
 
 Common issues and solutions:
+
 - Ensure all required toolboxes are installed
 - Verify the source code directory is in the MATLAB path
 - Check write permissions for the output directory
@@ -70,4 +75,4 @@ Common issues and solutions:
 
 ## Contact
 
-For questions or issues, please contact the development team. 
+For questions or issues, please contact the development team.

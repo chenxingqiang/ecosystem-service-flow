@@ -1,1 +1,64 @@
-["^ ","~$value-types?",["^ ","~:row",124,"~:col",1,"~:name","^0","~:ns","~$clj-span.model-lang","~:top-ns","^5","~:type","~:set"],"~$valid-properties?",["^ ","~:fixed-arities",["~#set",[2]],"~:private",true,"^4","^5","^3","^9","^7","~:fn","^2",1,"^6","^5","^1",127],"~$defspan",["^ ","^1",151,"^2",1,"~:macro",true,"~:varargs-min-arity",2,"^3","^>","^4","^5","^6","^5"],"~:filename","/Users/xingqiangchen/TASK/ecosystem-service-flow/clj-span/src/clj_span/model_lang.clj"]
+[
+    "^ ",
+    "~$value-types?",
+    [
+        "^ ",
+        "~:row",
+        124,
+        "~:col",
+        1,
+        "~:name",
+        "^0",
+        "~:ns",
+        "~$clj-span.model-lang",
+        "~:top-ns",
+        "^5",
+        "~:type",
+        "~:set"
+    ],
+    "~$valid-properties?",
+    [
+        "^ ",
+        "~:fixed-arities",
+        [
+            "~#set",
+            [
+                2
+            ]
+        ],
+        "~:private",
+        true,
+        "^4",
+        "^5",
+        "^3",
+        "^9",
+        "^7",
+        "~:fn",
+        "^2",
+        1,
+        "^6",
+        "^5",
+        "^1",
+        127
+    ],
+    "~$defspan",
+    [
+        "^ ",
+        "^1",
+        151,
+        "^2",
+        1,
+        "~:macro",
+        true,
+        "~:varargs-min-arity",
+        2,
+        "^3",
+        "^>",
+        "^4",
+        "^5",
+        "^6",
+        "^5"
+    ],
+    "~:filename",
+    "/Users/xingqiangchen/TASK/ecosystem-service-flow/clj-span/src/clj_span/model_lang.clj"
+]

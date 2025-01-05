@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `LineOfSightModel` class implements visibility analysis and line of sight calculations, considering terrain elevation, observer positions, and target locations. The model analyzes viewsheds, visibility networks, and visual impact assessments.
+The `LineOfSightModel` class implements visibility analysis and line of sight calculations, considering terrain elevation, observer positions, and target locations. The model analyzes view sheds, visibility networks, and visual impact assessments.
 
 ## Class Structure
 
@@ -40,13 +40,13 @@ success = model.initialize()
 
 Initializes model parameters and validates input data.
 
-### Calculate Viewshed
+### Calculate View shed
 
 ```matlab
 viewshed = model.calculateViewshed()
 ```
 
-Calculates viewshed from observer positions.
+Calculates view shed from observer positions.
 
 ### Analyze Line of Sight
 
@@ -164,4 +164,4 @@ The model includes comprehensive error checking:
 1. Visibility analysis
 2. GIS applications
 3. Visual impact assessment
-4. Landscape planning 
+4. Landscape planning

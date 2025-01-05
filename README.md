@@ -136,12 +136,14 @@ flood_results = flood_model.simulateFloodPropagation();
 ## Testing
 
 Run the comprehensive test suite:
+
 ```matlab
 cd tests
 RunSpanModels
 ```
 
 Individual model tests:
+
 ```matlab
 TestCarbonFlow
 TestFloodWater
@@ -188,7 +190,7 @@ If you use these models in your research, please cite:
 
 ## Contact
 
-Your Name - your.email@example.com
+Chen Xingqiang - chen.xingqiang@iechor.com
 
 Project Link: [https://github.com/chenxingqiang/ecosystem-service-flow](https://github.com/chenxingqiang/ecosystem-service-flow)
 

@@ -48,12 +48,14 @@ model = SubsistenceFisheriesModel(bathymetry_data, habitat_data, pressure_data, 
 ```
 
 ### Required Parameters
-- `bathymetry_data`: Bathymetry data (2D numeric matrix)
+
+- `bathymetry_data`: Bathymetric data (2D numeric matrix)
 - `habitat_data`: Habitat quality data (2D numeric matrix)
 - `pressure_data`: Fishing pressure data (2D numeric matrix)
 - `density_data`: Fish density data (2D numeric matrix)
 
 ### Optional Parameters
+
 - `cell_width`: Grid cell width in meters (default: 30)
 - `cell_height`: Grid cell height in meters (default: 30)
 - `growth_rate`: Population growth rate (default: 0.2)
@@ -65,6 +67,7 @@ model = SubsistenceFisheriesModel(bathymetry_data, habitat_data, pressure_data, 
 ## Main Methods
 
 ### Calculate Fishery Yield
+
 ```matlab
 [yield, sustainability] = model.calculateFisheryYield()
 ```
@@ -72,10 +75,12 @@ model = SubsistenceFisheriesModel(bathymetry_data, habitat_data, pressure_data, 
 Calculates fishery yield and sustainability metrics based on population and fishing parameters.
 
 #### Returns
+
 - `yield`: Fishery yield matrix
 - `sustainability`: Sustainability index matrix [0,1]
 
 ### Calculate Population Dynamics
+
 ```matlab
 [population_change, recruitment] = model.calculatePopulationDynamics()
 ```
@@ -83,10 +88,12 @@ Calculates fishery yield and sustainability metrics based on population and fish
 Calculates population changes and recruitment based on environmental factors.
 
 #### Returns
+
 - `population_change`: Population change matrix
 - `recruitment`: Recruitment matrix
 
 ### Calculate Fishing Impact
+
 ```matlab
 [impact, recovery_potential] = model.calculateFishingImpact()
 ```
@@ -94,10 +101,12 @@ Calculates population changes and recruitment based on environmental factors.
 Calculates fishing impact and recovery potential for the ecosystem.
 
 #### Returns
+
 - `impact`: Fishing impact matrix
 - `recovery_potential`: Recovery potential matrix [0,1]
 
 ### Calculate Service Flow
+
 ```matlab
 service_flow = model.calculateServiceFlow(source_strength, sink_capacity, yield)
 ```
@@ -105,40 +114,47 @@ service_flow = model.calculateServiceFlow(source_strength, sink_capacity, yield)
 Calculates service flow based on fishery yield and capacity constraints.
 
 #### Parameters
+
 - `source_strength`: Source strength matrix (fish population)
 - `sink_capacity`: Sink capacity matrix (fishing demand)
 - `yield`: Fishery yield matrix
 
 #### Returns
+
 - `service_flow`: Service flow matrix
 
 ## Model Parameters
 
 ### Population Parameters
+
 - Growth rate: 0.2-0.4
 - Carrying capacity: 500-2000
 - Mortality rate: 0.1-0.3
 - Recruitment rate: 0.2-0.5
 
 ### Fishing Parameters
+
 - Catch efficiency: 0.3-0.7
 - Effort threshold: 0.6-0.9
 - Seasonal factors: 0.5-1.5
 
 ### Environmental Parameters
-- Temperature range: 15-30°C
+
+- Temperature range: 15-30 °C
 - Salinity range: 30-36 ppt
 - Productivity index: 0-1
 
 ## Sustainability Assessment
 
 ### Yield Calculation
+
 1. Base yield potential
 2. Environmental modifiers
 3. Effort efficiency
 4. Seasonal adjustments
 
 ### Sustainability Metrics
+
 1. Population stability
 2. Harvest ratio
 3. Recovery potential
@@ -151,6 +167,7 @@ model.visualizeResults(yield, sustainability)
 ```
 
 Generates four subplots:
+
 1. Fishery yield
 2. Sustainability index
 3. Population density
@@ -194,6 +211,7 @@ model.visualizeResults(yield, sustainability);
 ## Implementation Details
 
 ### Population Dynamics
+
 1. Growth calculation:
    - Logistic growth model
    - Density dependence
@@ -210,6 +228,7 @@ model.visualizeResults(yield, sustainability);
    - Environmental conditions
 
 ### Fishing Impact
+
 1. Direct impacts:
    - Population reduction
    - Size structure changes
@@ -235,6 +254,7 @@ model.visualizeResults(yield, sustainability);
 ## Error Handling
 
 The model includes:
+
 - Input validation
 - Parameter range checking
 - Population constraints
@@ -270,8 +290,9 @@ The model includes:
 ## Data Requirements
 
 ### Required Data Layers
+
 1. Bathymetry:
-   - Resolution: 30m
+   - Resolution: 30 m
    - Format: GeoTIFF
    - Units: meters
 
@@ -291,6 +312,7 @@ The model includes:
    - Species composition
 
 ### Optional Data
+
 1. Environmental:
    - Temperature
    - Salinity
@@ -304,19 +326,22 @@ The model includes:
 ## Model Applications
 
 ### Management Support
+
 1. Sustainable harvest levels
 2. Protected area design
 3. Effort allocation
 4. Recovery planning
 
 ### Impact Assessment
+
 1. Fishing pressure
 2. Environmental change
 3. Habitat modification
 4. Cumulative impacts
 
 ### Monitoring Design
+
 1. Sampling strategies
 2. Indicator selection
 3. Threshold setting
-4. Adaptive management 
+4. Adaptive management

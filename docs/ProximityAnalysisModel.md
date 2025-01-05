@@ -43,12 +43,14 @@ model = ProximityAnalysisModel(dem_data, landuse_data, road_data, barriers_data,
 ```
 
 ### Required Parameters
+
 - `dem_data`: Digital Elevation Model (2D numeric matrix)
 - `landuse_data`: Land use classification (2D numeric matrix)
 - `road_data`: Road network classification (2D numeric matrix)
 - `barriers_data`: Barriers data (2D numeric matrix)
 
 ### Optional Parameters
+
 - `cell_width`: Grid cell width in meters (default: 30)
 - `cell_height`: Grid cell height in meters (default: 30)
 - `max_distance`: Maximum analysis distance in meters (default: 5000)
@@ -58,6 +60,7 @@ model = ProximityAnalysisModel(dem_data, landuse_data, road_data, barriers_data,
 ## Main Methods
 
 ### Calculate Accessibility
+
 ```matlab
 [cost_surface, accessibility] = model.calculateAccessibility(source_points)
 ```
@@ -65,13 +68,16 @@ model = ProximityAnalysisModel(dem_data, landuse_data, road_data, barriers_data,
 Calculates accessibility indices based on source points and environmental factors.
 
 #### Parameters
+
 - `source_points`: N×2 matrix of source point coordinates
 
 #### Returns
+
 - `cost_surface`: Accumulated cost surface matrix
 - `accessibility`: Accessibility index matrix [0,1]
 
 ### Calculate Base Cost
+
 ```matlab
 base_cost = model.calculateBaseCost()
 ```
@@ -79,9 +85,11 @@ base_cost = model.calculateBaseCost()
 Calculates the base cost surface considering terrain, land use, and road network.
 
 #### Returns
+
 - `base_cost`: Base cost matrix
 
 ### Calculate Cost Distance
+
 ```matlab
 cost_distance = model.calculateCostDistance(start_x, start_y, base_cost)
 ```
@@ -89,13 +97,16 @@ cost_distance = model.calculateCostDistance(start_x, start_y, base_cost)
 Calculates cost distance using Dijkstra's algorithm.
 
 #### Parameters
+
 - `start_x`, `start_y`: Starting point coordinates
 - `base_cost`: Base cost matrix
 
 #### Returns
+
 - `cost_distance`: Cost distance matrix
 
 ### Calculate Service Flow
+
 ```matlab
 service_flow = model.calculateServiceFlow(source_strength, sink_capacity, accessibility)
 ```
@@ -103,16 +114,19 @@ service_flow = model.calculateServiceFlow(source_strength, sink_capacity, access
 Calculates service flow based on source strength, sink capacity, and accessibility.
 
 #### Parameters
+
 - `source_strength`: Source strength matrix
 - `sink_capacity`: Sink capacity matrix
 - `accessibility`: Accessibility index matrix
 
 #### Returns
+
 - `service_flow`: Service flow matrix
 
 ## Transport Parameters
 
 ### Travel Speeds (m/s)
+
 - Highway: 30
 - Primary road: 20
 - Secondary road: 15
@@ -121,6 +135,7 @@ Calculates service flow based on source strength, sink capacity, and accessibili
 - Off-road: 1
 
 ### Impedance Factors
+
 - Urban: 1.0
 - Agriculture: 1.5
 - Forest: 2.0
@@ -133,21 +148,25 @@ Calculates service flow based on source strength, sink capacity, and accessibili
 The model supports four types of decay functions:
 
 1. **Exponential Decay**
+
    ```matlab
    accessibility = exp(-decay_param * cost_surface)
    ```
 
 2. **Linear Decay**
+
    ```matlab
    accessibility = max(0, 1 - decay_param * cost_surface)
    ```
 
 3. **Power Decay**
+
    ```matlab
    accessibility = cost_surface.^(-decay_param)
    ```
 
 4. **Gaussian Decay**
+
    ```matlab
    accessibility = exp(-(cost_surface.^2) * decay_param)
    ```
@@ -159,6 +178,7 @@ model.visualizeResults(cost_surface, accessibility)
 ```
 
 Generates four subplots:
+
 1. Accumulated cost surface
 2. Accessibility index
 3. Road network
@@ -201,6 +221,7 @@ model.visualizeResults(cost_surface, accessibility);
 ## Implementation Details
 
 ### Cost Surface Calculation
+
 1. Calculates base cost considering:
    - Slope derived from DEM
    - Land use impedance factors
@@ -213,11 +234,13 @@ model.visualizeResults(cost_surface, accessibility);
    - Accounts for diagonal movement cost
 
 ### Accessibility Calculation
+
 1. Applies selected decay function to cost surface
 2. Normalizes accessibility values to [0,1] range
 3. Sets inaccessible areas (cost = inf) to 0
 
 ### Service Flow Calculation
+
 1. Calculates potential flow as product of source strength and accessibility
 2. Applies sink capacity constraints
 3. Returns final service flow matrix
@@ -232,6 +255,7 @@ model.visualizeResults(cost_surface, accessibility);
 ## Error Handling
 
 The model includes input validation and error checking:
+
 - Validates input data dimensions
 - Checks parameter values and types
 - Handles edge cases in calculations
@@ -260,4 +284,4 @@ The model includes input validation and error checking:
 3. Improve visualization:
    - Add interactive plots
    - Support custom colormaps
-   - Include animation options 
+   - Include animation options

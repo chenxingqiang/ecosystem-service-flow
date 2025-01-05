@@ -1363,4 +1363,32 @@ function plan = generateFlowOptimization(bottleneck, landcover)
             end
         end
     end
-end 
+end
+
+% 添加政策分析部分
+policy_analyzer = YellowRiverPolicy();
+regional_analyzer = YellowRiverRegionalAnalyzer();
+
+% 加载政策参数
+policy_analyzer.loadPolicyParameters();
+
+% 分析区域特征
+regional_analyzer.analyzeRegionalCharacteristics();
+
+% 评估区域服务
+regional_results = regional_analyzer.evaluateRegionalService();
+
+% 检查政策合规性
+compliance = policy_analyzer.checkPolicyCompliance(regional_results);
+
+% 生成优化建议
+optimization_plan = generateOptimizationPlan(regional_results, compliance);
+
+% 生成综合报告
+report = struct();
+report.policy_compliance = compliance;
+report.regional_analysis = regional_results;
+report.optimization = optimization_plan;
+
+% 可视化结果
+visualizeResults(report); 
