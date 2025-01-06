@@ -31,14 +31,6 @@ if ~exist(report_dir, 'dir')
 end
 runner.addPlugin(TestReportPlugin.producingHTML(report_dir));
 
-% Add code coverage plugin
-coverage_dir = 'output/test_results/coverage';
-if ~exist(coverage_dir, 'dir')
-    mkdir(coverage_dir);
-end
-runner.addPlugin(CodeCoveragePlugin.producingHTML(coverage_dir, ...
-    'IncludingSubpackages', true));
-
 %% Run Unit Tests
 fprintf('\nRunning unit tests...\n');
 
@@ -159,4 +151,4 @@ save('output/test_results/test_results.mat', 'results');
 
 %% Display Test Report Location
 fprintf('\nDetailed test report available at: %s\n', fullfile(pwd, report_dir, 'index.html'));
-fprintf('Code coverage report available at: %s\n', fullfile(pwd, coverage_dir, 'index.html')); 
+% fprintf('Code coverage report available at: %s\n', fullfile(pwd, coverage_dir, 'index.html')); 
